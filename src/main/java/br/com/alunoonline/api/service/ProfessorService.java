@@ -1,7 +1,9 @@
 package br.com.alunoonline.api.service;
 
+import br.com.alunoonline.api.dtos.ProfessorDTO;
 import br.com.alunoonline.api.model.Professor;
 import br.com.alunoonline.api.repository.ProfessorRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +16,9 @@ public class ProfessorService {
     @Autowired
     ProfessorRepository professorRepository;
 
-    public void criarProfessor(Professor professor) {
+    public void criarProfessor(ProfessorDTO professorDTO) {
+        Professor professor = new Professor();
+        BeanUtils.copyProperties(professorDTO, professor);
         professorRepository.save(professor);
     }
 
@@ -30,8 +34,14 @@ public class ProfessorService {
         professorRepository.deleteById(id);
     }
 
-    public void atualizarProfessor(Long id, Professor professorEditado) {
-        professorEditado.setId(id);
-        professorRepository.save(professorEditado);
+    public void atualizarProfessor(Long id, ProfessorDTO professorDTO) {
+        Optional<Professor> professorExistente = professorRepository.findById(id);
+
+        if (professorExistente.isPresent()) {
+            Professor professor = professorExistente.get();
+            BeanUtils.copyProperties(professorDTO, professor);
+            professor.setId(id);
+            professorRepository.save(professor);
+        }
     }
 }

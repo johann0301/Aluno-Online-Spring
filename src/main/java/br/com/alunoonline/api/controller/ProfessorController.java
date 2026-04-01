@@ -1,7 +1,9 @@
 package br.com.alunoonline.api.controller;
 
+import br.com.alunoonline.api.dtos.ProfessorDTO;
 import br.com.alunoonline.api.model.Professor;
 import br.com.alunoonline.api.service.ProfessorService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +20,8 @@ public class ProfessorController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void criarProfessor(@RequestBody Professor professor) {
-        professorService.criarProfessor(professor);
+    public void criarProfessor(@RequestBody @Valid ProfessorDTO professorDTO) {
+        professorService.criarProfessor(professorDTO);
     }
 
     @GetMapping
@@ -42,7 +44,7 @@ public class ProfessorController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void atualizarProfessorPorId(@PathVariable Long id, @RequestBody Professor professorEditado) {
-        professorService.atualizarProfessor(id, professorEditado);
+    public void atualizarProfessorPorId(@PathVariable Long id, @RequestBody @Valid ProfessorDTO professorDTO) {
+        professorService.atualizarProfessor(id, professorDTO);
     }
 }
