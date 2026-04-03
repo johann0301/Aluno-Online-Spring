@@ -84,15 +84,29 @@ src/main/java/br/com/alunoonline/api/
 
 ---
 
-## 📸 Demonstração (Screenshots)
+## 📸 Demonstração (Imagens do Sistema)
 
-*Abaixo, você encontrará exemplos visuais das requisições e do estado do banco de dados.*
+Nesta seção, você pode ver o funcionamento da API na prática, desde as requisições no Insomnia até a persistência no banco de dados via DBeaver.
 
-### Requisições no Insomnia
-> [Espaço para inserir prints do Insomnia: POST, GET, etc.]
+### 1. Estado Inicial do Banco de Dados
+Abaixo, a tabela de **Professores** no DBeaver antes das operações de teste.
+![DBeaver Inicial](doc-images/dbeaver-inicial.png)
 
-### Banco de Dados no DBeaver
-> [Espaço para inserir prints do DBeaver: Tabelas de Aluno e Professor]
+### 2. Criando um Novo Professor (POST)
+Exemplo de uma requisição `POST` realizada no Insomnia para cadastrar um novo professor com validação de DTO.
+![Insomnia POST](doc-images/insomnia-post.png)
+
+### 3. Verificação de Dados no DBeaver
+Após o cadastro, podemos ver o novo registro inserido corretamente no PostgreSQL.
+![DBeaver Professores](doc-images/dbeaver-professores.png)
+
+### 4. Atualização de Registro (PUT)
+Realizando a atualização dos dados de um professor existente.
+![Insomnia PUT](doc-images/insomnia-put.png)
+
+### 5. Resultado Final e Busca por ID (GET)
+Verificando a alteração no banco e realizando uma busca individual por ID.
+![Insomnia GET](doc-images/insomnia-get.png)
 
 ---
 
