@@ -1,38 +1,62 @@
-# Aluno Online - API Backend
+# Aluno Online - API Backend 🎓
 
-Este projeto é um sistema de gerenciamento acadêmico desenvolvido em **Spring Boot**, focado no controle de alunos e professores. A API permite realizar operações de CRUD (Criar, Listar, Buscar, Atualizar e Deletar) para ambas as entidades, utilizando boas práticas de desenvolvimento Java e persistência de dados com PostgreSQL.
+Bem-vindo ao **Aluno Online**, uma API REST robusta desenvolvida para simplificar o gerenciamento acadêmico. Este sistema permite o controle centralizado de alunos e professores, servindo como base para plataformas de educação e portais acadêmicos.
+
+---
+
+## 📖 Sobre o Projeto
+
+O **Aluno Online** nasceu da necessidade de um sistema backend eficiente que pudesse escalar conforme a demanda de uma instituição de ensino. O foco principal é fornecer uma interface clara para operações de CRUD, garantindo a integridade dos dados e seguindo padrões de arquitetura modernos da indústria Java.
+
+### Objetivos Principais:
+- Facilitar o registro e manutenção de dados de **Alunos** e **Professores**.
+- Demonstrar o uso de **Arquitetura em Camadas** com o ecossistema Spring.
+- Implementar **Validação de Dados** rigorosa para prevenir inconsistências no banco de dados.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **Java 21**
-- **Spring Boot 4.0.3**
-- **Spring Data JPA** (Persistência de dados)
-- **PostgreSQL** (Banco de dados relacional)
-- **Lombok** (Produtividade e redução de código boilerplate)
-- **Jakarta Validation** (Validação de dados de entrada)
-- **Maven** (Gerenciamento de dependências)
+O projeto utiliza o estado da arte do ecossistema Java:
+
+- **Linguagem:** [Java 21](https://www.oracle.com/java/technologies/downloads/) (LTS)
+- **Framework:** [Spring Boot 4.x](https://spring.io/projects/spring-boot)
+- **Persistência:** Spring Data JPA + Hibernate
+- **Banco de Dados:** PostgreSQL
+- **Utilitários:** 
+  - [Lombok](https://projectlombok.org/): Redução de código boilerplate.
+  - [Jakarta Bean Validation](https://beanvalidation.org/): Validação de contratos (DTOs).
+- **Gerenciador de Dependências:** Maven
 
 ---
 
-## 🚀 Como Executar o Projeto
+## 📐 Arquitetura do Sistema
 
-1. **Configurar o Banco de Dados:**
-   - Certifique-se de ter o PostgreSQL instalado.
-   - Crie um banco de dados chamado `aluno-online`.
-   - No arquivo `src/main/resources/application.properties`, ajuste o nome de usuário e a senha conforme sua configuração local:
-     ```properties
-     spring.datasource.username=seu_usuario
-     spring.datasource.password=sua_senha
-     ```
+O sistema segue o padrão de **Arquitetura em Camadas**, garantindo o desacoplamento e a facilidade de testes:
 
-2. **Rodar a Aplicação:**
-   - Execute o comando Maven no terminal:
-     ```bash
-     mvn spring-boot:run
-     ```
-   - A API estará disponível em `http://localhost:8081`.
+1.  **Controller (Exposição):** Camada de entrada que recebe as requisições HTTP e valida os dados de entrada via DTOs.
+2.  **DTOs (Contratos):** Objetos de Transferência de Dados que definem o que é visível e editável pela API.
+3.  **Service (Lógica de Negócio):** Onde as regras do sistema residem. Faz o mapeamento entre DTOs e Entidades.
+4.  **Repository (Persistência):** Camada de abstração do banco de dados utilizando Spring Data JPA.
+5.  **Model/Entity (Banco de Dados):** Representação das tabelas físicas no banco PostgreSQL.
+
+---
+
+## 📂 Detalhamento do Código
+
+### Estrutura de Pastas
+```text
+src/main/java/br/com/alunoonline/api/
+├── controller/ # Handlers dos endpoints REST
+├── service/    # Lógica de negócio e mapeamento
+├── repository/ # Interfaces de acesso ao banco
+├── model/      # Entidades do Banco de Dados
+└── dtos/       # Contratos de entrada e validação (Bean Validation)
+```
+
+### Funcionalidades Implementadas
+- **Aluno:** CRUD completo com persistência direta.
+- **Professor:** CRUD completo utilizando DTOs para proteção da entidade e validação via `@Valid`.
 
 ---
 
@@ -40,56 +64,41 @@ Este projeto é um sistema de gerenciamento acadêmico desenvolvido em **Spring 
 
 ### 👨‍🎓 Alunos (`/alunos`)
 
-Gerenciamento de estudantes do sistema.
-
 | Método | Endpoint | Descrição |
 | :--- | :--- | :--- |
-| `POST` | `/alunos` | Cria um novo aluno |
-| `GET` | `/alunos` | Lista todos os alunos |
-| `GET` | `/alunos/{id}` | Busca um aluno pelo ID |
-| `PUT` | `/alunos/{id}` | Atualiza um aluno existente |
-| `DELETE` | `/alunos/{id}` | Remove um aluno do sistema |
-
-#### Exemplo de Body (POST/PUT):
-```json
-{
-  "name": "Nome do Aluno",
-  "email": "aluno@email.com",
-  "cpf": "123.456.789-00"
-}
-```
-
----
+| `POST` | `/alunos` | Cadastra um novo aluno |
+| `GET` | `/alunos` | Retorna lista de todos os alunos |
+| `GET` | `/alunos/{id}` | Busca aluno por identificador único |
+| `PUT` | `/alunos/{id}` | Atualiza dados de um aluno |
+| `DELETE` | `/alunos/{id}` | Exclui registro de um aluno |
 
 ### 👨‍🏫 Professores (`/professores`)
 
-Gerenciamento de professores com validação de dados via DTO.
-
 | Método | Endpoint | Descrição |
 | :--- | :--- | :--- |
-| `POST` | `/professores` | Cria um novo professor |
-| `GET` | `/professores` | Lista todos os professores |
-| `GET` | `/professores/{id}` | Busca um professor pelo ID |
-| `PUT` | `/professores/{id}` | Atualiza um professor existente |
-| `DELETE` | `/professores/{id}` | Remove um professor do sistema |
-
-#### Exemplo de Body (POST/PUT):
-> **Nota:** Todos os campos são obrigatórios e o e-mail deve ser válido.
-
-```json
-{
-  "name": "Nome do Professor",
-  "email": "professor@email.com",
-  "cpf": "987.654.321-99"
-}
-```
+| `POST` | `/professores` | Cadastra um professor (Valida e-mail e campos brancos) |
+| `GET` | `/professores` | Retorna lista de todos os professores |
+| `GET` | `/professores/{id}` | Busca professor por identificador único |
+| `PUT` | `/professores/{id}` | Atualiza dados (com re-validação dos campos) |
+| `DELETE` | `/professores/{id}` | Exclui registro de um professor |
 
 ---
 
-## 📂 Estrutura do Projeto
+## 📸 Demonstração (Screenshots)
 
-- `controller`: Endpoints da API.
-- `service`: Regras de negócio e lógica do sistema.
-- `repository`: Interfaces de comunicação com o banco de dados.
-- `model`: Entidades JPA que representam as tabelas.
-- `dtos`: Objetos de transferência de dados com validações customizadas.
+*Abaixo, você encontrará exemplos visuais das requisições e do estado do banco de dados.*
+
+### Requisições no Insomnia
+> [Espaço para inserir prints do Insomnia: POST, GET, etc.]
+
+### Banco de Dados no DBeaver
+> [Espaço para inserir prints do DBeaver: Tabelas de Aluno e Professor]
+
+---
+
+## 🚀 Como Rodar o Projeto
+
+1. Clone o repositório.
+2. Crie um banco PostgreSQL chamado `aluno-online`.
+3. Configure `application.properties` com suas credenciais.
+4. Execute `mvn spring-boot:run`.
