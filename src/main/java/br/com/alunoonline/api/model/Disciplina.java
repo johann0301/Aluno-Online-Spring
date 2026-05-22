@@ -1,5 +1,6 @@
 package br.com.alunoonline.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,6 +28,7 @@ public class Disciplina {
     @JoinColumn(name = "professor_id")
     private Professor professor;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "disciplina", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Matricula> matriculas;
 }

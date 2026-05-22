@@ -1,5 +1,7 @@
 package br.com.alunoonline.api.service;
 
+import br.com.alunoonline.api.dtos.AlunoDTO;
+import br.com.alunoonline.api.dtos.DisciplinaDTO;
 import br.com.alunoonline.api.dtos.MatriculaDTO;
 import br.com.alunoonline.api.dtos.MatriculaResponseDTO;
 import br.com.alunoonline.api.model.Aluno;
@@ -9,7 +11,10 @@ import br.com.alunoonline.api.repository.AlunoRepository;
 import br.com.alunoonline.api.repository.DisciplinaRepository;
 import br.com.alunoonline.api.repository.MatriculaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +32,32 @@ public class MatriculaService {
 
     @Autowired
     DisciplinaRepository disciplinaRepository;
+
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    // Chama procedure SQL sp_transferir_matricula
+    public void transferirMatricula(Long matriculaId, Long disciplinaNovaId) {
+        jdbcTemplate.update(
+            "CALL sp_transferir_matricula(?, ?)",
+            matriculaId.intValue(), disciplinaNovaId.intValue()
+        );
+    }
+
+    // Chama procedure SQL sp_lancar_nota
+    public void lancarNota(Long matriculaId, BigDecimal nota) {
+        jdbcTemplate.update(
+            "CALL sp_lancar_nota(?, ?)",
+            matriculaId.intValue(), nota
+        );
+    }
+
+    // Chama function SQL fn_media_aluno
+    public BigDecimal mediaAluno(Long alunoId) {
+        return jdbcTemplate.queryForObject(
+            "SELECT fn_media_aluno(?)", BigDecimal.class, alunoId
+        );
+    }
 
     public MatriculaResponseDTO criarMatricula(MatriculaDTO matriculaDTO) {
         Aluno aluno = alunoRepository.findById(matriculaDTO.getAlunoId())
@@ -92,9 +123,33 @@ public class MatriculaService {
     private MatriculaResponseDTO converterParaResponseDTO(Matricula matricula) {
         MatriculaResponseDTO responseDTO = new MatriculaResponseDTO();
         responseDTO.setId(matricula.getId());
+        responseDTO.setAluno(converterAluno(matricula.getAluno()));
+        responseDTO.setDisciplina(converterDisciplina(matricula.getDisciplina()));
         responseDTO.setDataPrimeira(matricula.getDataPrimeira());
         responseDTO.setNota(matricula.getNota());
         responseDTO.setStatus(matricula.getStatus());
         return responseDTO;
+    }
+
+    private AlunoDTO converterAluno(Aluno aluno) {
+        if (aluno == null) return null;
+        AlunoDTO dto = new AlunoDTO();
+        dto.setId(aluno.getId());
+        dto.setName(aluno.getName());
+        dto.setEmail(aluno.getEmail());
+        dto.setCpf(aluno.getCpf());
+        return dto;
+    }
+
+    private DisciplinaDTO converterDisciplina(Disciplina disciplina) {
+        if (disciplina == null) return null;
+        DisciplinaDTO dto = new DisciplinaDTO();
+        dto.setId(disciplina.getId());
+        dto.setNome(disciplina.getNome());
+        dto.setCargaHoraria(disciplina.getCargaHoraria());
+        if (disciplina.getProfessor() != null) {
+            dto.setProfessorId(disciplina.getProfessor().getId());
+        }
+        return dto;
     }
 }

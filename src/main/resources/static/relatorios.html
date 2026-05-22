@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relatórios — Aluno Online</title>
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --surface-2: #f1f3f8;
+    --surface-3: #e8edf5;
+    --border: #e4e7ee;
+    --border-strong: #cbd2dd;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --text-subtle: #9ca3af;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-soft: #dbeafe;
+    --success: #16a34a;
+    --success-hover: #15803d;
+    --success-soft: #dcfce7;
+    --warning: #d97706;
+    --warning-soft: #fef3c7;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --danger-soft: #fee2e2;
+    --code-bg: #0b1220;
+    --code-text: #d7dee9;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, .04);
+    --shadow-md: 0 8px 24px rgba(15, 23, 42, .08);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Aptos, "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button, input, select {
+    font: inherit;
+  }
+
+  .report-shell {
+    width: min(1180px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 16px 0 28px;
+  }
+
+  .intro {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .intro h1 {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .intro p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+  }
+
+  .summary {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 4px 9px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .chip strong {
+    color: var(--text);
+    font-weight: 700;
+    margin-right: 4px;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .panel-head {
+    min-height: 48px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .panel-title {
+    min-width: 0;
+  }
+
+  .panel-title h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .panel-title span {
+    display: block;
+    margin-top: 2px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .panel-body {
+    padding: 16px;
+  }
+
+  .builder-grid {
+    display: grid;
+    grid-template-columns: minmax(260px, 2fr) minmax(180px, 1.2fr) 130px 120px;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .workspace-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+    gap: 14px;
+  }
+
+  .field {
+    min-width: 0;
+  }
+
+  .field label,
+  .field-label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  select,
+  input[type="text"],
+  input[type="number"],
+  input[type="search"] {
+    width: 100%;
+    height: 36px;
+    padding: 7px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    outline: 0;
+    transition: border-color .12s, box-shadow .12s, background .12s;
+  }
+
+  select:focus,
+  input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .15);
+  }
+
+  input::placeholder {
+    color: var(--text-subtle);
+  }
+
+  .search-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 7px 13px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    transition: background .12s, border-color .12s, transform .12s;
+  }
+
+  .btn:hover { background: var(--primary-hover); }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+    transform: none;
+  }
+
+  .btn.ghost {
+    background: var(--surface);
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  .btn.ghost:hover {
+    background: var(--surface-2);
+  }
+
+  .btn.success {
+    background: var(--success);
+  }
+
+  .btn.success:hover {
+    background: var(--success-hover);
+  }
+
+  .btn.danger {
+    background: var(--danger);
+  }
+
+  .btn.danger:hover {
+    background: var(--danger-hover);
+  }
+
+  .btn.icon {
+    width: 34px;
+    padding: 0;
+    font-size: 18px;
+  }
+
+  .btn.sm {
+    min-height: 30px;
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .fields-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 8px;
+    max-height: 244px;
+    overflow: auto;
+    padding: 1px;
+  }
+
+  .check-card {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color .12s, background .12s;
+  }
+
+  .check-card:hover {
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+  }
+
+  .check-card input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--primary);
+    flex: 0 0 auto;
+  }
+
+  .check-text {
+    min-width: 0;
+  }
+
+  .check-text strong {
+    display: block;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .check-text code {
+    display: block;
+    margin-top: 1px;
+    color: var(--text-muted);
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .filters {
+    display: grid;
+    gap: 8px;
+  }
+
+  .filter-row {
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) 96px minmax(120px, 1fr) 34px;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .empty {
+    padding: 24px 16px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  .actions-panel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+  }
+
+  .status {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .status.ok { color: var(--success); }
+  .status.warn { color: var(--warning); }
+  .status.error { color: var(--danger); }
+
+  .results-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .sql-box {
+    margin: 0;
+    padding: 12px;
+    max-height: 130px;
+    overflow: auto;
+    border-radius: var(--radius-sm);
+    background: var(--code-bg);
+    color: var(--code-text);
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+
+  .table-wrap {
+    max-height: 480px;
+    overflow: auto;
+    border-top: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  th, td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+  }
+
+  tbody tr:hover td {
+    background: #fafbfc;
+  }
+
+  td.num,
+  th.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cell-muted {
+    color: var(--text-subtle);
+  }
+
+  .error-box {
+    display: none;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    background: var(--danger-soft);
+    color: #991b1b;
+    font-weight: 600;
+  }
+
+  .skeleton {
+    min-height: 90px;
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+  }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 920px) {
+    .builder-grid,
+    .workspace-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .intro {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .summary {
+      justify-content: flex-start;
+    }
+
+    .status {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .report-shell {
+      width: min(100% - 20px, 1180px);
+      padding-top: 10px;
+    }
+
+    .panel-head,
+    .search-row,
+    .actions-panel,
+    .results-head {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .search-row,
+    .filter-row {
+      grid-template-columns: 1fr;
+    }
+
+    .btn-row,
+    .btn {
+      width: 100%;
+    }
+
+    .btn.icon {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+<main class="report-shell">
+  <header class="intro">
+    <div>
+      <h1>Construtor de relatórios</h1>
+      <p>Views do PostgreSQL, filtros seguros e exportação CSV.</p>
+    </div>
+    <div class="summary" aria-live="polite">
+      <span class="chip"><strong id="summaryFields">0</strong> campos</span>
+      <span class="chip"><strong id="summaryFilters">0</strong> filtros</span>
+      <span class="chip"><strong id="summaryRows">0</strong> linhas</span>
+    </div>
+  </header>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <section class="panel" aria-labelledby="sourceTitle">
+    <div class="panel-head">
+      <div class="panel-title">
+        <h2 id="sourceTitle">Fonte de dados</h2>
+        <span id="viewHint">Carregando views disponíveis...</span>
+      </div>
+      <button class="btn sm ghost" type="button" id="reloadBtn" title="Recarregar metadados">Recarregar</button>
+    </div>
+    <div class="panel-body">
+      <div class="builder-grid">
+        <div class="field">
+          <label for="viewSelect">View</label>
+          <select id="viewSelect"></select>
+        </div>
+        <div class="field">
+          <label for="orderBy">Ordenar por</label>
+          <select id="orderBy">
+            <option value="">Sem ordenação</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="orderDir">Direção</label>
+          <select id="orderDir">
+            <option value="ASC">Crescente</option>
+            <option value="DESC">Decrescente</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="limit">Limite</label>
+          <input id="limit" type="number" min="1" max="10000" value="100">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="workspace-grid">
+    <section class="panel" aria-labelledby="fieldsTitle">
+      <div class="panel-head">
+        <div class="panel-title">
+          <h2 id="fieldsTitle">Campos</h2>
+          <span>Escolha as colunas que entram no SELECT.</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn sm ghost" type="button" id="selectAllBtn">Todos</button>
+          <button class="btn sm ghost" type="button" id="clearFieldsBtn">Limpar</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="search-row" style="margin-bottom:10px">
+          <input type="search" id="fieldSearch" placeholder="Buscar campo...">
+          <button class="btn sm ghost" type="button" id="invertFieldsBtn">Inverter</button>
+        </div>
+        <div class="fields-list" id="fieldsList">
+          <div class="skeleton"><span class="spinner" aria-label="Carregando"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="filtersTitle">
+      <div class="panel-head">
+        <div class="panel-title">
+          <h2 id="filtersTitle">Filtros</h2>
+          <span>Condições combinadas com AND.</span>
+        </div>
+        <button class="btn sm ghost" type="button" id="addFilterBtn">Adicionar</button>
+      </div>
+      <div class="panel-body">
+        <div class="filters" id="filtersList"></div>
+        <div class="empty" id="filtersEmpty">Nenhum filtro adicionado.</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="actions-panel">
+      <button class="btn" type="button" id="runBtn">Executar consulta</button>
+      <button class="btn success" type="button" id="exportBtn">Exportar CSV</button>
+      <button class="btn ghost" type="button" id="resetBtn">Resetar</button>
+      <span class="status" id="statusLine"></span>
+    </div>
+  </section>
+
+  <section class="panel" id="resultPanel" aria-labelledby="resultTitle" style="display:none">
+    <div class="panel-head results-head">
+      <div class="panel-title">
+        <h2 id="resultTitle">Resultado</h2>
+        <span id="resultSubtitle">A consulta ainda não foi executada.</span>
+      </div>
+      <span class="chip"><strong id="resultCount">0</strong> registro(s)</span>
+    </div>
+    <div class="panel-body">
+      <div class="field-label">SQL gerado</div>
+      <pre class="sql-box" id="sqlBox"></pre>
+    </div>
+    <div class="table-wrap" id="tableWrap"></div>
+  </section>
+</main>
+
+<script>
+const OPERATORS = ['=', '!=', '>', '<', '>=', '<=', 'LIKE', 'ILIKE'];
+
+const state = {
+  metadata: {},
+  selectedView: '',
+  selectedFields: new Set(),
+  lastResult: null,
+};
+
+const els = {};
+
+document.addEventListener('DOMContentLoaded', init);
+
+async function init() {
+  cacheElements();
+  bindEvents();
+  await loadMetadata();
+}
+
+function cacheElements() {
+  [
+    'errorBox', 'viewHint', 'viewSelect', 'orderBy', 'orderDir', 'limit',
+    'fieldsList', 'fieldSearch', 'filtersList', 'filtersEmpty', 'statusLine',
+    'resultPanel', 'resultSubtitle', 'resultCount', 'sqlBox', 'tableWrap',
+    'summaryFields', 'summaryFilters', 'summaryRows'
+  ].forEach(id => els[id] = document.getElementById(id));
+}
+
+function bindEvents() {
+  document.getElementById('reloadBtn').addEventListener('click', loadMetadata);
+  document.getElementById('runBtn').addEventListener('click', consultar);
+  document.getElementById('exportBtn').addEventListener('click', exportar);
+  document.getElementById('resetBtn').addEventListener('click', resetBuilder);
+  document.getElementById('addFilterBtn').addEventListener('click', addFilter);
+  document.getElementById('selectAllBtn').addEventListener('click', () => setAllFields(true));
+  document.getElementById('clearFieldsBtn').addEventListener('click', () => setAllFields(false));
+  document.getElementById('invertFieldsBtn').addEventListener('click', invertFields);
+
+  els.viewSelect.addEventListener('change', () => {
+    state.selectedView = els.viewSelect.value;
+    renderForView();
+  });
+  els.fieldSearch.addEventListener('input', renderFields);
+  els.fieldsList.addEventListener('change', event => {
+    if (event.target.matches('input[type="checkbox"]')) {
+      if (event.target.checked) {
+        state.selectedFields.add(event.target.value);
+      } else {
+        state.selectedFields.delete(event.target.value);
+      }
+      updateSummary();
+    }
+  });
+  els.filtersList.addEventListener('input', updateSummary);
+  els.filtersList.addEventListener('change', updateSummary);
+  els.limit.addEventListener('input', updateSummary);
+}
+
+async function loadMetadata() {
+  hideError();
+  setStatus('Carregando metadados...');
+  disableActions(true);
+
+  try {
+    state.metadata = await fetchJson('/relatorios/metadata');
+    const views = Object.keys(state.metadata);
+    state.selectedView = views[0] || '';
+    renderViewOptions();
+    renderForView();
+    setStatus('Metadados carregados.', 'ok');
+  } catch (e) {
+    showError('Falha ao carregar metadados: ' + e.message);
+    els.viewHint.textContent = 'Não foi possível carregar as views.';
+    els.fieldsList.innerHTML = '<div class="empty">Metadados indisponíveis.</div>';
+  } finally {
+    disableActions(false);
+  }
+}
+
+function renderViewOptions() {
+  const views = Object.entries(state.metadata);
+  els.viewSelect.innerHTML = views.map(([key, meta]) =>
+    `<option value="${escapeHtml(key)}">${escapeHtml(meta.label || key)}</option>`
+  ).join('');
+  els.viewSelect.value = state.selectedView;
+}
+
+function renderForView() {
+  const meta = currentMeta();
+  if (!meta) {
+    els.viewHint.textContent = 'Nenhuma view disponível.';
+    els.fieldsList.innerHTML = '<div class="empty">Nenhuma view encontrada.</div>';
+    return;
+  }
+
+  els.viewHint.textContent = `${fieldEntries().length} coluna(s) disponíveis em ${state.selectedView}.`;
+  els.fieldSearch.value = '';
+  state.selectedFields = new Set(fieldEntries().map(([key]) => key));
+  renderOrderOptions();
+  renderFields();
+  clearFilters();
+  updateSummary();
+}
+
+function renderOrderOptions() {
+  const selected = els.orderBy.value;
+  const options = ['<option value="">Sem ordenação</option>'].concat(
+    fieldEntries().map(([key, label]) =>
+      `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`
+    )
+  );
+  els.orderBy.innerHTML = options.join('');
+  if (fieldEntries().some(([key]) => key === selected)) {
+    els.orderBy.value = selected;
+  }
+}
+
+function renderFields() {
+  const filter = normalize(els.fieldSearch.value);
+  const entries = fieldEntries().filter(([key, label]) =>
+    !filter || normalize(key).includes(filter) || normalize(label).includes(filter)
+  );
+
+  if (!entries.length) {
+    els.fieldsList.innerHTML = '<div class="empty">Nenhum campo encontrado.</div>';
+    return;
+  }
+
+  els.fieldsList.innerHTML = entries.map(([key, label]) => `
+    <label class="check-card">
+      <input type="checkbox" value="${escapeHtml(key)}" ${state.selectedFields.has(key) ? 'checked' : ''}>
+      <span class="check-text">
+        <strong>${escapeHtml(label)}</strong>
+        <code>${escapeHtml(key)}</code>
+      </span>
+    </label>
+  `).join('');
+}
+
+function setAllFields(checked) {
+  state.selectedFields = checked
+    ? new Set(fieldEntries().map(([key]) => key))
+    : new Set();
+  renderFields();
+  updateSummary();
+}
+
+function invertFields() {
+  const next = new Set();
+  fieldEntries().forEach(([key]) => {
+    if (!state.selectedFields.has(key)) next.add(key);
+  });
+  state.selectedFields = next;
+  renderFields();
+  updateSummary();
+}
+
+function addFilter() {
+  if (!currentMeta()) return;
+  const row = document.createElement('div');
+  row.className = 'filter-row';
+  row.innerHTML = `
+    <select class="filter-field" aria-label="Campo do filtro">
+      ${fieldEntries().map(([key, label]) =>
+        `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`
+      ).join('')}
+    </select>
+    <select class="filter-operator" aria-label="Operador">
+      ${OPERATORS.map(op => `<option value="${escapeHtml(op)}">${escapeHtml(op)}</option>`).join('')}
+    </select>
+    <input type="text" class="filter-value" placeholder="valor" aria-label="Valor do filtro">
+    <button class="btn danger icon" type="button" title="Remover filtro" aria-label="Remover filtro">×</button>
+  `;
+  row.querySelector('button').addEventListener('click', () => {
+    row.remove();
+    updateFiltersEmpty();
+    updateSummary();
+  });
+  els.filtersList.appendChild(row);
+  updateFiltersEmpty();
+  updateSummary();
+  row.querySelector('.filter-value').focus();
+}
+
+function clearFilters() {
+  els.filtersList.innerHTML = '';
+  updateFiltersEmpty();
+}
+
+function updateFiltersEmpty() {
+  els.filtersEmpty.style.display = els.filtersList.children.length ? 'none' : 'block';
+}
+
+function buildRequest() {
+  const campos = selectedFields();
+  if (!campos.length) {
+    throw new Error('Selecione pelo menos um campo para consultar.');
+  }
+
+  const filtros = [...els.filtersList.querySelectorAll('.filter-row')]
+    .map(row => {
+      const operador = row.querySelector('.filter-operator').value;
+      const rawValue = row.querySelector('.filter-value').value.trim();
+      return {
+        campo: row.querySelector('.filter-field').value,
+        operador,
+        valor: coerceValue(rawValue, operador),
+        rawValue
+      };
+    })
+    .filter(f => f.rawValue !== '')
+    .map(({ rawValue, ...f }) => f);
+
+  const limitValue = Number.parseInt(els.limit.value, 10);
+  const limit = Number.isFinite(limitValue)
+    ? Math.min(Math.max(limitValue, 1), 10000)
+    : 100;
+  els.limit.value = limit;
+
+  return {
+    view: state.selectedView,
+    campos,
+    filtros,
+    orderBy: els.orderBy.value || null,
+    orderDir: els.orderDir.value,
+    limit
+  };
+}
+
+async function consultar() {
+  hideError();
+  setStatus('Consultando...');
+  disableActions(true);
+
+  try {
+    const data = await fetchJson('/relatorios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildRequest())
+    });
+    state.lastResult = data;
+    renderResult(data);
+    setStatus(`${data.linhas.length} linha(s) retornada(s).`, 'ok');
+  } catch (e) {
+    showError(e.message);
+    setStatus('Consulta interrompida.', 'error');
+  } finally {
+    disableActions(false);
+    updateSummary();
+  }
+}
+
+async function exportar() {
+  hideError();
+  setStatus('Exportando CSV...');
+  disableActions(true);
+
+  try {
+    const response = await fetch('/relatorios/export.csv', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildRequest())
+    });
+
+    if (!response.ok) {
+      throw new Error(await errorMessage(response));
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `relatorio_${state.selectedView}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 250);
+    setStatus('CSV exportado.', 'ok');
+  } catch (e) {
+    showError(e.message);
+    setStatus('Exportação interrompida.', 'error');
+  } finally {
+    disableActions(false);
+  }
+}
+
+function renderResult(data) {
+  els.resultPanel.style.display = 'block';
+  els.resultSubtitle.textContent = `${currentMeta()?.label || state.selectedView} · ${data.campos.length} campo(s)`;
+  els.resultCount.textContent = data.linhas.length;
+  els.sqlBox.textContent = data.sqlExecutado || '';
+
+  if (!data.linhas.length) {
+    els.tableWrap.innerHTML = '<div class="empty" style="margin:16px">Nenhum registro encontrado.</div>';
+    return;
+  }
+
+  const numericFields = detectNumericFields(data);
+  const header = data.labels.map((label, index) => {
+    const key = data.campos[index];
+    const klass = numericFields.has(key) ? ' class="num"' : '';
+    return `<th${klass}>${escapeHtml(label)}</th>`;
+  }).join('');
+
+  const rows = data.linhas.map(row => {
+    const cells = data.campos.map(key => {
+      const klass = numericFields.has(key) ? ' class="num"' : '';
+      return `<td${klass}>${formatCell(row[key])}</td>`;
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+
+  els.tableWrap.innerHTML = `
+    <table>
+      <thead><tr>${header}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function resetBuilder() {
+  if (!state.selectedView) return;
+  renderForView();
+  state.lastResult = null;
+  els.resultPanel.style.display = 'none';
+  setStatus('Filtros e seleção resetados.');
+  hideError();
+  updateSummary();
+}
+
+function currentMeta() {
+  return state.metadata[state.selectedView];
+}
+
+function fieldEntries() {
+  const meta = currentMeta();
+  return meta ? Object.entries(meta.colunas || {}) : [];
+}
+
+function selectedFields() {
+  return fieldEntries()
+    .map(([key]) => key)
+    .filter(key => state.selectedFields.has(key));
+}
+
+function updateSummary() {
+  els.summaryFields.textContent = selectedFields().length;
+  els.summaryFilters.textContent = [...els.filtersList.querySelectorAll('.filter-value')]
+    .filter(input => input.value.trim() !== '').length;
+  els.summaryRows.textContent = state.lastResult?.linhas?.length || 0;
+}
+
+function disableActions(disabled) {
+  ['runBtn', 'exportBtn', 'resetBtn', 'reloadBtn', 'addFilterBtn'].forEach(id => {
+    const node = document.getElementById(id);
+    if (node) node.disabled = disabled;
+  });
+}
+
+async function fetchJson(url, options) {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    throw new Error(await errorMessage(response));
+  }
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function errorMessage(response) {
+  const text = await response.text().catch(() => '');
+  if (!text) return `HTTP ${response.status}`;
+
+  try {
+    const json = JSON.parse(text);
+    return json.message || json.error || json.detail || text;
+  } catch {
+    return text;
+  }
+}
+
+function showError(message) {
+  els.errorBox.textContent = message;
+  els.errorBox.style.display = 'block';
+}
+
+function hideError() {
+  els.errorBox.textContent = '';
+  els.errorBox.style.display = 'none';
+}
+
+function setStatus(message, tone = '') {
+  els.statusLine.textContent = message || '';
+  els.statusLine.className = tone ? `status ${tone}` : 'status';
+}
+
+function coerceValue(value, operator) {
+  if (operator === 'LIKE' || operator === 'ILIKE') {
+    return value;
+  }
+
+  if (/^-?\d+([.,]\d+)?$/.test(value)) {
+    return Number(value.replace(',', '.'));
+  }
+
+  return value;
+}
+
+function detectNumericFields(data) {
+  const numeric = new Set();
+  data.campos.forEach(key => {
+    const values = data.linhas
+      .map(row => row[key])
+      .filter(value => value !== null && value !== undefined && value !== '');
+    if (values.length && values.every(value => typeof value === 'number')) {
+      numeric.add(key);
+    }
+  });
+  return numeric;
+}
+
+function formatCell(value) {
+  if (value === null || value === undefined || value === '') {
+    return '<span class="cell-muted">—</span>';
+  }
+
+  if (typeof value === 'number') {
+    return escapeHtml(new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(value));
+  }
+
+  return escapeHtml(value);
+}
+
+function normalize(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
+</script>
+</body>
+</html>

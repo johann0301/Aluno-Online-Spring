@@ -8,7 +8,6 @@ public class AlunoOnlineApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(AlunoOnlineApplication.class, args);
-		System.out.println("oi");
 	}
 
 }

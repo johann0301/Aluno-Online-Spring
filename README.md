@@ -1,118 +1,278 @@
-# Aluno Online - API Backend 🎓
+# Aluno Online - Spring Boot
 
-Bem-vindo ao **Aluno Online**, uma API REST robusta desenvolvida para simplificar o gerenciamento acadêmico. Este sistema permite o controle centralizado de alunos e professores, servindo como base para plataformas de educação e portais acadêmicos.
+Sistema academico em Spring Boot para gerenciar alunos, professores, disciplinas,
+matriculas, boletim, lancamento de notas e relatorios interativos com PostgreSQL.
 
----
+## Tecnologias
 
-## 📖 Sobre o Projeto
+- Java 21+
+- Spring Boot 4
+- Spring Data JPA / Hibernate
+- PostgreSQL
+- Maven Wrapper
+- Lombok
+- Jakarta Bean Validation
 
-O **Aluno Online** nasceu da necessidade de um sistema backend eficiente que pudesse escalar conforme a demanda de uma instituição de ensino. O foco principal é fornecer uma interface clara para operações de CRUD, garantindo a integridade dos dados e seguindo padrões de arquitetura modernos da indústria Java.
+## Funcionalidades
 
-### Objetivos Principais:
-- Facilitar o registro e manutenção de dados de **Alunos** e **Professores**.
-- Demonstrar o uso de **Arquitetura em Camadas** com o ecossistema Spring.
-- Implementar **Validação de Dados** rigorosa para prevenir inconsistências no banco de dados.
+- CRUD de alunos e professores.
+- CRUD de disciplinas com vinculo opcional a professor.
+- CRUD de matriculas com status `ATIVA`, `CONCLUIDA` e `TRANCADA`.
+- Dashboard com KPIs academicos.
+- Boletim por aluno usando view e function SQL.
+- Lancamento de notas via procedure SQL.
+- Transferencia de matricula entre disciplinas via procedure SQL.
+- Relatorios interativos por view, campos, filtros, ordenacao e exportacao CSV.
+- Seed de demonstracao com 10 alunos, 4 professores, 6 disciplinas e 28 matriculas.
 
----
+## Estrutura Principal
 
-## 🛠️ Tecnologias Utilizadas
-
-O projeto utiliza o estado da arte do ecossistema Java:
-
-- **Linguagem:** [Java 21](https://www.oracle.com/java/technologies/downloads/) (LTS)
-- **Framework:** [Spring Boot 4.x](https://spring.io/projects/spring-boot)
-- **Persistência:** Spring Data JPA + Hibernate
-- **Banco de Dados:** PostgreSQL
-- **Utilitários:** 
-  - [Lombok](https://projectlombok.org/): Redução de código boilerplate.
-  - [Jakarta Bean Validation](https://beanvalidation.org/): Validação de contratos (DTOs).
-- **Gerenciador de Dependências:** Maven
-
----
-
-## 📐 Arquitetura do Sistema
-
-O sistema segue o padrão de **Arquitetura em Camadas**, garantindo o desacoplamento e a facilidade de testes:
-
-1.  **Controller (Exposição):** Camada de entrada que recebe as requisições HTTP e valida os dados de entrada via DTOs.
-2.  **DTOs (Contratos):** Objetos de Transferência de Dados que definem o que é visível e editável pela API.
-3.  **Service (Lógica de Negócio):** Onde as regras do sistema residem. Faz o mapeamento entre DTOs e Entidades.
-4.  **Repository (Persistência):** Camada de abstração do banco de dados utilizando Spring Data JPA.
-5.  **Model/Entity (Banco de Dados):** Representação das tabelas físicas no banco PostgreSQL.
-
----
-
-## 📂 Detalhamento do Código
-
-### Estrutura de Pastas
 ```text
 src/main/java/br/com/alunoonline/api/
-├── controller/ # Handlers dos endpoints REST
-├── service/    # Lógica de negócio e mapeamento
-├── repository/ # Interfaces de acesso ao banco
-├── model/      # Entidades do Banco de Dados
-└── dtos/       # Contratos de entrada e validação (Bean Validation)
+├── config/      # Seed de dados demonstrativos
+├── controller/  # Endpoints REST
+├── dtos/        # Contratos de entrada/saida
+├── model/       # Entidades JPA
+├── repository/  # Repositorios Spring Data
+└── service/     # Regras de negocio e acesso JDBC
+
+src/main/resources/
+├── db/          # Views, procedures e function PostgreSQL
+└── static/      # Mini-aplicacao web
 ```
 
-### Funcionalidades Implementadas
-- **Aluno:** CRUD completo com persistência direta.
-- **Professor:** CRUD completo utilizando DTOs para proteção da entidade e validação via `@Valid`.
+## Como Rodar
 
----
+### 1. Requisitos
 
-## 📖 Documentação da API
+Instale:
 
-### 👨‍🎓 Alunos (`/alunos`)
+- Java 21 ou superior
+- PostgreSQL
 
-| Método | Endpoint | Descrição |
+Confira:
+
+```bash
+java -version
+psql --version
+```
+
+### 2. Criar o Banco
+
+Crie um banco chamado `aluno-online`:
+
+```bash
+createdb -h localhost -U postgres aluno-online
+```
+
+Se preferir pelo `psql`:
+
+```sql
+CREATE DATABASE "aluno-online";
+```
+
+### 3. Configurar Credenciais
+
+O projeto nao versiona senha do banco. Configure por variaveis de ambiente:
+
+```bash
+export DB_URL="jdbc:postgresql://localhost:5432/aluno-online"
+export DB_USERNAME="postgres"
+export DB_PASSWORD="sua_senha_do_postgres"
+```
+
+Valores padrao se voce nao informar variaveis:
+
+```properties
+DB_URL=jdbc:postgresql://localhost:5432/aluno-online
+DB_USERNAME=postgres
+DB_PASSWORD=
+```
+
+### 4. Subir a Aplicacao
+
+```bash
+./mvnw spring-boot:run
+```
+
+Acesse:
+
+```text
+http://localhost:8081/
+```
+
+### 5. Popular ou Resetar Dados de Demo
+
+Por padrao, o seed so roda se o banco ainda nao tiver matriculas.
+
+Para apagar os dados atuais e recriar o seed limpo, rode uma vez com:
+
+```bash
+APP_SEED_RESET=true ./mvnw spring-boot:run
+```
+
+Depois pare a aplicacao e suba normalmente:
+
+```bash
+./mvnw spring-boot:run
+```
+
+Tambem da para trocar temporariamente em `src/main/resources/application.properties`:
+
+```properties
+app.seed.reset=true
+```
+
+Depois do reset, volte para:
+
+```properties
+app.seed.reset=false
+```
+
+## Banco de Dados
+
+O Spring executa automaticamente os scripts SQL ao iniciar:
+
+```properties
+spring.sql.init.mode=always
+spring.sql.init.data-locations=classpath:db/01_views.sql,classpath:db/02_procedures.sql
+spring.sql.init.separator=;;
+spring.jpa.defer-datasource-initialization=true
+```
+
+Arquivos:
+
+- `src/main/resources/db/01_views.sql`
+- `src/main/resources/db/02_procedures.sql`
+
+### Views
+
+| View | Descricao |
+| :--- | :--- |
+| `vw_aluno_completo` | Aluno + contagem de matriculas por status |
+| `vw_matricula_detalhada` | Matricula com aluno, disciplina, professor, nota, status e situacao |
+| `vw_aprovacao_disciplina` | Aprovacao, reprovacao, media e percentual por disciplina |
+| `vw_carga_professor` | Disciplinas, carga horaria, matriculas e media por professor |
+
+### Procedures e Function
+
+| Objeto | Descricao |
+| :--- | :--- |
+| `sp_transferir_matricula(matricula_id, disciplina_nova_id)` | Transfere uma matricula para outra disciplina |
+| `sp_lancar_nota(matricula_id, nota)` | Lanca nota e conclui automaticamente quando `nota >= 7` |
+| `fn_media_aluno(aluno_id)` | Retorna a media geral do aluno |
+
+## Endpoints
+
+### Alunos
+
+| Metodo | Endpoint |
+| :--- | :--- |
+| `POST` | `/alunos` |
+| `GET` | `/alunos` |
+| `GET` | `/alunos/{id}` |
+| `PUT` | `/alunos/{id}` |
+| `DELETE` | `/alunos/{id}` |
+
+### Professores
+
+| Metodo | Endpoint |
+| :--- | :--- |
+| `POST` | `/professores` |
+| `GET` | `/professores` |
+| `GET` | `/professores/{id}` |
+| `PUT` | `/professores/{id}` |
+| `DELETE` | `/professores/{id}` |
+
+### Disciplinas
+
+| Metodo | Endpoint |
+| :--- | :--- |
+| `POST` | `/disciplina` |
+| `GET` | `/disciplina` |
+| `GET` | `/disciplina/{id}` |
+| `PUT` | `/disciplina/{id}` |
+| `DELETE` | `/disciplina/{id}` |
+
+### Matriculas
+
+| Metodo | Endpoint | Descricao |
 | :--- | :--- | :--- |
-| `POST` | `/alunos` | Cadastra um novo aluno |
-| `GET` | `/alunos` | Retorna lista de todos os alunos |
-| `GET` | `/alunos/{id}` | Busca aluno por identificador único |
-| `PUT` | `/alunos/{id}` | Atualiza dados de um aluno |
-| `DELETE` | `/alunos/{id}` | Exclui registro de um aluno |
+| `POST` | `/matriculas` | Cria matricula |
+| `GET` | `/matriculas` | Lista matriculas |
+| `GET` | `/matriculas/{id}` | Busca por ID |
+| `GET` | `/matriculas/aluno/{alunoId}` | Lista por aluno |
+| `GET` | `/matriculas/disciplina/{disciplinaId}` | Lista por disciplina |
+| `PUT` | `/matriculas/{id}` | Atualiza status |
+| `DELETE` | `/matriculas/{id}` | Remove matricula |
+| `POST` | `/matriculas/{id}/transferir` | Chama `sp_transferir_matricula` |
+| `POST` | `/matriculas/{id}/nota` | Chama `sp_lancar_nota` |
+| `GET` | `/matriculas/aluno/{alunoId}/media` | Chama `fn_media_aluno` |
 
-### 👨‍🏫 Professores (`/professores`)
+### Dashboard e Relatorios
 
-| Método | Endpoint | Descrição |
+| Metodo | Endpoint | Descricao |
 | :--- | :--- | :--- |
-| `POST` | `/professores` | Cadastra um professor (Valida e-mail e campos brancos) |
-| `GET` | `/professores` | Retorna lista de todos os professores |
-| `GET` | `/professores/{id}` | Busca professor por identificador único |
-| `PUT` | `/professores/{id}` | Atualiza dados (com re-validação dos campos) |
-| `DELETE` | `/professores/{id}` | Exclui registro de um professor |
+| `GET` | `/dashboard/kpis` | KPIs, rankings e agregados |
+| `GET` | `/dashboard/boletim/{alunoId}` | Boletim completo do aluno |
+| `GET` | `/dashboard/matriculas-ativas` | Matriculas para lancamento de nota |
+| `GET` | `/relatorios/metadata` | Views e campos permitidos |
+| `POST` | `/relatorios` | Consulta interativa em JSON |
+| `POST` | `/relatorios/export.csv` | Exporta CSV |
 
----
+## Mini-Aplicacao Web
 
-## 📸 Demonstração (Imagens do Sistema)
+Com a API rodando, abra:
 
-Nesta seção, você pode ver o funcionamento da API na prática, desde as requisições no Insomnia até a persistência no banco de dados via DBeaver.
+```text
+http://localhost:8081/
+```
 
-### 1. Estado Inicial do Banco de Dados
-Abaixo, a tabela de **Professores** no DBeaver antes das operações de teste.
-![DBeaver Inicial](doc-images/dbeaver-inicial.png)
+Telas disponiveis:
 
-### 2. Criando um Novo Professor (POST)
-Exemplo de uma requisição `POST` realizada no Insomnia para cadastrar um novo professor com validação de DTO.
-![Insomnia POST](doc-images/insomnia-post.png)
+- Dashboard
+- Alunos
+- Professores
+- Disciplinas
+- Matriculas
+- Boletim
+- Lancar Notas
+- Relatorios
 
-### 3. Verificação de Dados no DBeaver
-Após o cadastro, podemos ver o novo registro inserido corretamente no PostgreSQL.
-![DBeaver Professores](doc-images/dbeaver-professores.png)
+## Validacao
 
-### 4. Atualização de Registro (PUT)
-Realizando a atualização dos dados de um professor existente.
-![Insomnia PUT](doc-images/insomnia-put.png)
+Build sem executar testes:
 
-### 5. Resultado Final e Busca por ID (GET)
-Verificando a alteração no banco e realizando uma busca individual por ID.
-![Insomnia GET](doc-images/insomnia-get.png)
+```bash
+./mvnw -DskipTests package
+```
 
----
+Checar endpoints principais:
 
-## 🚀 Como Rodar o Projeto
+```bash
+curl http://localhost:8081/alunos
+curl http://localhost:8081/dashboard/kpis
+curl http://localhost:8081/relatorios/metadata
+```
 
-1. Clone o repositório.
-2. Crie um banco PostgreSQL chamado `aluno-online`.
-3. Configure `application.properties` com suas credenciais.
-4. Execute `mvn spring-boot:run`.
+Exemplo de consulta de relatorio:
+
+```bash
+curl -X POST http://localhost:8081/relatorios \
+  -H "Content-Type: application/json" \
+  -d '{
+    "view": "vw_aluno_completo",
+    "campos": ["aluno_id", "aluno_nome", "total_matriculas"],
+    "filtros": [],
+    "orderBy": "aluno_id",
+    "orderDir": "ASC",
+    "limit": 5
+  }'
+```
+
+## Seguranca e Credenciais
+
+- Nao suba `.env`, senha real, token, chave privada ou arquivo local de IDE.
+- `application.properties` usa `DB_URL`, `DB_USERNAME` e `DB_PASSWORD`.
+- O construtor de relatorios usa whitelist de views, colunas e operadores.
+- Valores dos filtros entram por parametros JDBC, nao por concatenacao livre.

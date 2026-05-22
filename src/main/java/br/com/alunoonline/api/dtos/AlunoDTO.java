@@ -7,6 +7,8 @@ import lombok.Data;
 @Data
 public class AlunoDTO {
 
+    private Long id;
+
     @NotBlank(message = "O nome não pode estar em branco")
     private String name;
 
