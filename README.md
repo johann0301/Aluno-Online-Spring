@@ -12,6 +12,7 @@ matriculas, boletim, lancamento de notas e relatorios interativos com PostgreSQL
 - Maven Wrapper
 - Lombok
 - Jakarta Bean Validation
+- Springdoc OpenAPI / Swagger UI
 
 ## Funcionalidades
 
@@ -99,6 +100,13 @@ Acesse:
 
 ```text
 http://localhost:8081/
+```
+
+Documentacao Swagger:
+
+```text
+http://localhost:8081/swagger-ui.html
+http://localhost:8081/v3/api-docs
 ```
 
 ### 5. Popular ou Resetar Dados de Demo
@@ -219,6 +227,13 @@ Arquivos:
 | `GET` | `/relatorios/metadata` | Views e campos permitidos |
 | `POST` | `/relatorios` | Consulta interativa em JSON |
 | `POST` | `/relatorios/export.csv` | Exporta CSV |
+
+### Swagger
+
+| Metodo | Endpoint | Descricao |
+| :--- | :--- | :--- |
+| `GET` | `/swagger-ui.html` | Interface interativa da documentacao OpenAPI |
+| `GET` | `/v3/api-docs` | Especificacao OpenAPI em JSON |
 
 ## Mini-Aplicacao Web
 
