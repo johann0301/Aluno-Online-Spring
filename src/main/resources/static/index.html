@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Aluno Online — Gestão Acadêmica</title>
+<script src="/auth.js"></script>
 <style>
   :root {
     --bg: #f6f7fb;
@@ -511,6 +512,7 @@
         <span class="current" id="bcCurrent">Dashboard</span>
       </div>
       <div class="topbar-spacer"></div>
+      <a href="/login.html" data-logout style="color:var(--text-muted);font-size:12px">Sair</a>
       <div class="topbar-user">
         <div class="avatar">AD</div>
         <span>Administrador</span>
@@ -1096,9 +1098,10 @@ async function renderMatriculas() {
         </div>
         <select id="fStatus" style="width:auto">
           <option value="">Todos os status</option>
-          <option value="ATIVA">Ativa</option>
-          <option value="CONCLUIDA">Concluída</option>
-          <option value="TRANCADA">Trancada</option>
+          <option value="MATRICULADO">Matriculado</option>
+          <option value="APROVADO">Aprovado</option>
+          <option value="REPROVADO">Reprovado</option>
+          <option value="TRANCADO">Trancado</option>
         </select>
         <span class="chip" id="cntMat">0</span>
       </div>
@@ -1193,9 +1196,9 @@ async function formMatricula() {
     </div>
     <div class="field"><label>Status inicial *</label>
       <select id="fStat">
-        <option value="ATIVA">Ativa</option>
-        <option value="TRANCADA">Trancada</option>
-        <option value="CONCLUIDA">Concluída</option>
+        <option value="MATRICULADO">Matriculado</option>
+        <option value="TRANCADO">Trancado</option>
+        <option value="APROVADO">Aprovado</option>
       </select>
     </div>
   `, `
@@ -1222,9 +1225,10 @@ function formMatriculaStatus(id, current) {
   openModal('Alterar status', `
     <div class="field"><label>Novo status</label>
       <select id="fStat">
-        <option value="ATIVA" ${current==='ATIVA'?'selected':''}>Ativa</option>
-        <option value="TRANCADA" ${current==='TRANCADA'?'selected':''}>Trancada</option>
-        <option value="CONCLUIDA" ${current==='CONCLUIDA'?'selected':''}>Concluída</option>
+        <option value="MATRICULADO" ${current==='MATRICULADO'?'selected':''}>Matriculado</option>
+        <option value="TRANCADO" ${current==='TRANCADO'?'selected':''}>Trancado</option>
+        <option value="APROVADO" ${current==='APROVADO'?'selected':''}>Aprovado</option>
+        <option value="REPROVADO" ${current==='REPROVADO'?'selected':''}>Reprovado</option>
       </select>
     </div>
   `, `
@@ -1323,7 +1327,7 @@ async function carregarBoletim() {
   try {
     const [matriculas, mediaResp] = await Promise.all([
       api('/dashboard/boletim/' + id),
-      api('/matriculas/aluno/' + id + '/media')
+      api('/dashboard/aluno/' + id + '/media')
     ]);
     const nome = sel.selectedOptions[0].textContent;
     if (!matriculas.length) {
@@ -1331,9 +1335,9 @@ async function carregarBoletim() {
         <div class="panel-body">${emptyState('Nenhuma matrícula encontrada para este aluno.')}</div></div>`;
       return;
     }
-    const ativas = matriculas.filter(m => m.status === 'ATIVA').length;
-    const concl = matriculas.filter(m => m.status === 'CONCLUIDA').length;
-    const tranc = matriculas.filter(m => m.status === 'TRANCADA').length;
+    const ativas = matriculas.filter(m => m.status === 'MATRICULADO').length;
+    const concl = matriculas.filter(m => m.status === 'APROVADO').length;
+    const tranc = matriculas.filter(m => m.status === 'TRANCADO').length;
     div.innerHTML = `
       <div class="kpi-grid">
         <div class="kpi info"><div class="kpi-label">Aluno</div>
@@ -1404,16 +1408,20 @@ async function renderNotas() {
       div.innerHTML = `<div class="table-wrap"><table class="tbl">
         <thead><tr>
           <th>Aluno</th><th>Disciplina</th><th>Professor</th>
-          <th class="num">Nota atual</th><th>Nova nota</th><th class="actions"></th>
+          <th class="num">Nota 1</th><th class="num">Nota 2</th><th class="num">Média</th><th>Status</th><th class="actions"></th>
         </tr></thead><tbody>
         ${list.map(m => `<tr>
           <td class="cell-strong">${escapeHtml(m.aluno_nome)}</td>
           <td>${escapeHtml(m.disciplina_nome)}</td>
           <td>${fmt(m.professor_nome)}</td>
-          <td class="num">${fmtNum(m.nota)}</td>
           <td><input type="number" min="0" max="10" step="0.1"
-                id="n_${m.matricula_id}" style="width:90px"
-                value="${m.nota ?? ''}"></td>
+                id="n1_${m.matricula_id}" style="width:70px"
+                value="${m.nota1 ?? ''}"></td>
+          <td><input type="number" min="0" max="10" step="0.1"
+                id="n2_${m.matricula_id}" style="width:70px"
+                value="${m.nota2 ?? ''}"></td>
+          <td class="num">${fmtNum(m.nota)}</td>
+          <td><span class="badge ${m.status}">${m.status}</span></td>
           <td class="actions"><button class="btn sm success" onclick="salvarNota(${m.matricula_id})">Salvar</button></td>
         </tr>`).join('')}
         </tbody></table></div>`;
@@ -1424,13 +1432,20 @@ async function renderNotas() {
 }
 
 async function salvarNota(id) {
-  const input = document.getElementById('n_' + id);
-  const nota = parseFloat(input.value);
-  if (isNaN(nota) || nota < 0 || nota > 10) return toast('Nota inválida (0 — 10)', 'error');
+  const n1 = parseFloat(document.getElementById('n1_' + id).value);
+  const n2 = parseFloat(document.getElementById('n2_' + id).value);
+  
+  const nota1 = isNaN(n1) ? null : n1;
+  const nota2 = isNaN(n2) ? null : n2;
+  
+  if ((nota1 !== null && (nota1 < 0 || nota1 > 10)) || (nota2 !== null && (nota2 < 0 || nota2 > 10))) {
+    return toast('Nota inválida (0 — 10)', 'error');
+  }
+
   try {
-    await api('/matriculas/' + id + '/nota', { method:'POST',
-      headers:{'Content-Type':'application/json'}, body: JSON.stringify({ nota }) });
-    toast(nota >= 7 ? 'Nota lançada — status virou CONCLUIDA' : 'Nota lançada');
+    await api('/matriculas/atualizar-notas/' + id, { method:'PATCH',
+      headers:{'Content-Type':'application/json'}, body: JSON.stringify({ nota1, nota2 }) });
+    toast('Notas salvas com sucesso!');
     renderNotas();
   } catch (e) { toast(e.message, 'error'); }
 }

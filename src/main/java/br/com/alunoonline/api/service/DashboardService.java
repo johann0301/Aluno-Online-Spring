@@ -31,13 +31,13 @@ public class DashboardService {
             jdbc.queryForObject("SELECT COUNT(*) FROM matricula", Long.class));
         r.put("matriculasAtivas",
             jdbc.queryForObject(
-                "SELECT COUNT(*) FROM matricula WHERE status = 'ATIVA'", Long.class));
+                "SELECT COUNT(*) FROM matricula WHERE status = 'MATRICULADO'", Long.class));
         r.put("matriculasConcluidas",
             jdbc.queryForObject(
-                "SELECT COUNT(*) FROM matricula WHERE status = 'CONCLUIDA'", Long.class));
+                "SELECT COUNT(*) FROM matricula WHERE status = 'APROVADO'", Long.class));
         r.put("matriculasTrancadas",
             jdbc.queryForObject(
-                "SELECT COUNT(*) FROM matricula WHERE status = 'TRANCADA'", Long.class));
+                "SELECT COUNT(*) FROM matricula WHERE status = 'TRANCADO'", Long.class));
 
         // Media geral usando view
         r.put("mediaGeral",
@@ -76,9 +76,16 @@ public class DashboardService {
     public List<Map<String, Object>> matriculasAtivas() {
         return jdbc.queryForList(
             "SELECT matricula_id, aluno_nome, disciplina_nome, " +
-            "       professor_nome, nota, status " +
+            "       professor_nome, nota1, nota2, nota, status " +
             "  FROM vw_matricula_detalhada " +
-            " WHERE status = 'ATIVA' " +
+            " WHERE status = 'MATRICULADO' " +
             " ORDER BY disciplina_nome, aluno_nome");
+    }
+
+    public Map<String, Object> mediaAluno(Long alunoId) {
+        Double media = jdbc.queryForObject("SELECT fn_media_aluno(?)", Double.class, alunoId);
+        Map<String, Object> map = new HashMap<>();
+        map.put("media", media);
+        return map;
     }
 }

@@ -80,52 +80,52 @@ public class DatabaseSeeder implements CommandLineRunner {
         LocalDateTime trancouLaAtras   = LocalDateTime.now().minusDays(200);
 
         // Pedro
-        matricula(aPedro, dAlgo, semestreAnterior, "8.5", StatusMatricula.CONCLUIDA);
-        matricula(aPedro, dBd,   semestreAtual,    null,  StatusMatricula.ATIVA);
-        matricula(aPedro, dEs,   semestreAtual,    null,  StatusMatricula.ATIVA);
+        matricula(aPedro, dAlgo, semestreAnterior, "8.5", StatusMatricula.APROVADO);
+        matricula(aPedro, dBd,   semestreAtual,    null,  StatusMatricula.MATRICULADO);
+        matricula(aPedro, dEs,   semestreAtual,    null,  StatusMatricula.MATRICULADO);
 
         // Julia (top)
-        matricula(aJulia, dAlgo, semestreAnterior, "9.5", StatusMatricula.CONCLUIDA);
-        matricula(aJulia, dMat,  semestreAnterior, "9.8", StatusMatricula.CONCLUIDA);
-        matricula(aJulia, dBd,   semestreAtual,    "7.5", StatusMatricula.ATIVA);
-        matricula(aJulia, dWeb,  semestreAtual,    null,  StatusMatricula.ATIVA);
+        matricula(aJulia, dAlgo, semestreAnterior, "9.5", StatusMatricula.APROVADO);
+        matricula(aJulia, dMat,  semestreAnterior, "9.8", StatusMatricula.APROVADO);
+        matricula(aJulia, dBd,   semestreAtual,    "7.5", StatusMatricula.MATRICULADO);
+        matricula(aJulia, dWeb,  semestreAtual,    null,  StatusMatricula.MATRICULADO);
 
         // Rafael
-        matricula(aRafael, dAlgo,  semestreAnterior, "6.0", StatusMatricula.CONCLUIDA);
-        matricula(aRafael, dBd,    semestreAtual,    null,  StatusMatricula.ATIVA);
-        matricula(aRafael, dRedes, semestreAnterior, "5.5", StatusMatricula.TRANCADA);
+        matricula(aRafael, dAlgo,  semestreAnterior, "6.0", StatusMatricula.REPROVADO);
+        matricula(aRafael, dBd,    semestreAtual,    null,  StatusMatricula.MATRICULADO);
+        matricula(aRafael, dRedes, semestreAnterior, "5.5", StatusMatricula.TRANCADO);
 
         // Beatriz
-        matricula(aBeatriz, dBd,  semestreAtual,    "9.0", StatusMatricula.ATIVA);
-        matricula(aBeatriz, dMat, semestreAnterior, "8.7", StatusMatricula.CONCLUIDA);
-        matricula(aBeatriz, dEs,  semestreAtual,    null,  StatusMatricula.ATIVA);
+        matricula(aBeatriz, dBd,  semestreAtual,    "9.0", StatusMatricula.MATRICULADO);
+        matricula(aBeatriz, dMat, semestreAnterior, "8.7", StatusMatricula.APROVADO);
+        matricula(aBeatriz, dEs,  semestreAtual,    null,  StatusMatricula.MATRICULADO);
 
         // Lucas (com reprovacao)
-        matricula(aLucas, dAlgo,  semestreAnterior, "4.5", StatusMatricula.CONCLUIDA);
-        matricula(aLucas, dMat,   semestreAnterior, "5.8", StatusMatricula.CONCLUIDA);
-        matricula(aLucas, dRedes, semestreAtual,    null,  StatusMatricula.ATIVA);
+        matricula(aLucas, dAlgo,  semestreAnterior, "4.5", StatusMatricula.REPROVADO);
+        matricula(aLucas, dMat,   semestreAnterior, "5.8", StatusMatricula.REPROVADO);
+        matricula(aLucas, dRedes, semestreAtual,    null,  StatusMatricula.MATRICULADO);
 
         // Carolina (carga cheia)
-        matricula(aCarol, dAlgo, semestreAnterior, "7.8", StatusMatricula.CONCLUIDA);
-        matricula(aCarol, dBd,   semestreAtual,    null,  StatusMatricula.ATIVA);
-        matricula(aCarol, dWeb,  semestreAtual,    null,  StatusMatricula.ATIVA);
-        matricula(aCarol, dEs,   semestreAtual,    null,  StatusMatricula.ATIVA);
+        matricula(aCarol, dAlgo, semestreAnterior, "7.8", StatusMatricula.APROVADO);
+        matricula(aCarol, dBd,   semestreAtual,    null,  StatusMatricula.MATRICULADO);
+        matricula(aCarol, dWeb,  semestreAtual,    null,  StatusMatricula.MATRICULADO);
+        matricula(aCarol, dEs,   semestreAtual,    null,  StatusMatricula.MATRICULADO);
 
         // Thiago
-        matricula(aThiago, dAlgo, trancouLaAtras, null, StatusMatricula.TRANCADA);
-        matricula(aThiago, dMat,  semestreAtual,  null, StatusMatricula.ATIVA);
+        matricula(aThiago, dAlgo, trancouLaAtras, null, StatusMatricula.TRANCADO);
+        matricula(aThiago, dMat,  semestreAtual,  null, StatusMatricula.MATRICULADO);
 
         // Amanda
-        matricula(aAmanda, dWeb,   semestreAtual,    "8.2", StatusMatricula.ATIVA);
-        matricula(aAmanda, dRedes, semestreAtual,    null,  StatusMatricula.ATIVA);
-        matricula(aAmanda, dEs,    semestreAnterior, "7.0", StatusMatricula.CONCLUIDA);
+        matricula(aAmanda, dWeb,   semestreAtual,    "8.2", StatusMatricula.MATRICULADO);
+        matricula(aAmanda, dRedes, semestreAtual,    null,  StatusMatricula.MATRICULADO);
+        matricula(aAmanda, dEs,    semestreAnterior, "7.0", StatusMatricula.APROVADO);
 
         // Gustavo
-        matricula(aGustavo, dAlgo, semestreAnterior, "7.2", StatusMatricula.CONCLUIDA);
-        matricula(aGustavo, dWeb,  semestreAtual,    null,  StatusMatricula.ATIVA);
+        matricula(aGustavo, dAlgo, semestreAnterior, "7.2", StatusMatricula.APROVADO);
+        matricula(aGustavo, dWeb,  semestreAtual,    null,  StatusMatricula.MATRICULADO);
 
         // Fernanda
-        matricula(aFernanda, dMat, semestreAnterior, "6.5", StatusMatricula.CONCLUIDA);
+        matricula(aFernanda, dMat, semestreAnterior, "6.5", StatusMatricula.REPROVADO);
 
         log.info("[Seed] Concluido: {} alunos, {} professores, {} disciplinas, {} matriculas.",
             alunoRepo.count(), profRepo.count(), discRepo.count(), matRepo.count());
@@ -160,7 +160,11 @@ public class DatabaseSeeder implements CommandLineRunner {
         Matricula m = new Matricula();
         m.setAluno(a); m.setDisciplina(d);
         m.setDataPrimeira(data);
-        m.setNota(nota == null ? null : new BigDecimal(nota));
+        if (nota != null) {
+            Double val = Double.valueOf(nota);
+            m.setNota1(val);
+            m.setNota2(val);
+        }
         m.setStatus(status);
         matRepo.save(m);
     }

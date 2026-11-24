@@ -1,28 +1,35 @@
 package br.com.alunoonline.api.service;
 
 import br.com.alunoonline.api.dtos.AlunoDTO;
+import br.com.alunoonline.api.dtos.AtualizarNotasRequestDTO;
 import br.com.alunoonline.api.dtos.DisciplinaDTO;
+import br.com.alunoonline.api.dtos.DisciplinasAlunoResponseDTO;
+import br.com.alunoonline.api.dtos.HistoricoAlunoResponseDTO;
 import br.com.alunoonline.api.dtos.MatriculaDTO;
 import br.com.alunoonline.api.dtos.MatriculaResponseDTO;
 import br.com.alunoonline.api.model.Aluno;
 import br.com.alunoonline.api.model.Disciplina;
 import br.com.alunoonline.api.model.Matricula;
+import br.com.alunoonline.api.model.StatusMatricula;
 import br.com.alunoonline.api.repository.AlunoRepository;
 import br.com.alunoonline.api.repository.DisciplinaRepository;
 import br.com.alunoonline.api.repository.MatriculaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class MatriculaService {
+
+    private static final Double MEDIA_PARA_APROVACAO = 7.0;
 
     @Autowired
     MatriculaRepository matriculaRepository;
@@ -35,29 +42,6 @@ public class MatriculaService {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
-
-    // Chama procedure SQL sp_transferir_matricula
-    public void transferirMatricula(Long matriculaId, Long disciplinaNovaId) {
-        jdbcTemplate.update(
-            "CALL sp_transferir_matricula(?, ?)",
-            matriculaId.intValue(), disciplinaNovaId.intValue()
-        );
-    }
-
-    // Chama procedure SQL sp_lancar_nota
-    public void lancarNota(Long matriculaId, BigDecimal nota) {
-        jdbcTemplate.update(
-            "CALL sp_lancar_nota(?, ?)",
-            matriculaId.intValue(), nota
-        );
-    }
-
-    // Chama function SQL fn_media_aluno
-    public BigDecimal mediaAluno(Long alunoId) {
-        return jdbcTemplate.queryForObject(
-            "SELECT fn_media_aluno(?)", BigDecimal.class, alunoId
-        );
-    }
 
     public MatriculaResponseDTO criarMatricula(MatriculaDTO matriculaDTO) {
         Aluno aluno = alunoRepository.findById(matriculaDTO.getAlunoId())
@@ -76,11 +60,78 @@ public class MatriculaService {
         Matricula matricula = new Matricula();
         matricula.setAluno(aluno);
         matricula.setDisciplina(disciplina);
-        matricula.setStatus(matriculaDTO.getStatus());
+        matricula.setStatus(StatusMatricula.MATRICULADO);
         matricula.setDataPrimeira(LocalDateTime.now());
 
         Matricula matriculaSalva = matriculaRepository.save(matricula);
         return converterParaResponseDTO(matriculaSalva);
+    }
+
+    public void trancarMatricula(Long id) {
+        Matricula matricula = matriculaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Matricula não encontrada"));
+
+        if (matricula.getStatus().equals(StatusMatricula.MATRICULADO)) {
+            matricula.setStatus(StatusMatricula.TRANCADO);
+            matriculaRepository.save(matricula);
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Só é possível trancar com status MATRICULADO");
+        }
+    }
+
+    public void atualizarNotas(Long id, AtualizarNotasRequestDTO dto) {
+        Matricula matricula = matriculaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Matricula não encontrada"));
+
+        if (dto.getNota1() != null) matricula.setNota1(dto.getNota1());
+        if (dto.getNota2() != null) matricula.setNota2(dto.getNota2());
+
+        if (matricula.getNota1() != null && matricula.getNota2() != null) {
+            Double media = (matricula.getNota1() + matricula.getNota2()) / 2;
+            matricula.setStatus(media >= MEDIA_PARA_APROVACAO ? StatusMatricula.APROVADO : StatusMatricula.REPROVADO);
+        }
+
+        matriculaRepository.save(matricula);
+    }
+
+    public HistoricoAlunoResponseDTO emitirHistorico(Long alunoId) {
+        List<Matricula> matriculas = matriculaRepository.findByAlunoId(alunoId);
+
+        if (matriculas.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nenhuma matrícula encontrada para esse aluno");
+        }
+
+        Aluno aluno = matriculas.get(0).getAluno();
+
+        List<DisciplinasAlunoResponseDTO> disciplinas = new ArrayList<>();
+
+        for (Matricula matricula : matriculas) {
+            DisciplinasAlunoResponseDTO disc = new DisciplinasAlunoResponseDTO();
+            disc.setNomeDisciplina(matricula.getDisciplina().getNome());
+            
+            if (matricula.getDisciplina().getProfessor() != null) {
+                disc.setNomeProfessor(matricula.getDisciplina().getProfessor().getName());
+            }
+
+            disc.setNota1(matricula.getNota1());
+            disc.setNota2(matricula.getNota2());
+
+            if (matricula.getNota1() != null && matricula.getNota2() != null) {
+                Double media = (matricula.getNota1() + matricula.getNota2()) / 2;
+                disc.setMedia(media);
+            }
+
+            disc.setStatus(matricula.getStatus());
+            disciplinas.add(disc);
+        }
+
+        HistoricoAlunoResponseDTO historico = new HistoricoAlunoResponseDTO();
+        historico.setNomeAluno(aluno.getName());
+        historico.setEmailAluno(aluno.getEmail());
+        historico.setCpfAluno(aluno.getCpf());
+        historico.setDisciplinas(disciplinas);
+
+        return historico;
     }
 
     public List<MatriculaResponseDTO> listarTodasMatriculas() {
@@ -111,6 +162,10 @@ public class MatriculaService {
         matriculaRepository.deleteById(id);
     }
 
+    public void transferirMatricula(Long matriculaId, Long disciplinaNovaId) {
+        jdbcTemplate.update("CALL sp_transferir_matricula(?, ?)", matriculaId.intValue(), disciplinaNovaId.intValue());
+    }
+
     public MatriculaResponseDTO atualizarMatricula(Long id, MatriculaDTO matriculaDTO) {
         Matricula matricula = matriculaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Matrícula não encontrada"));
@@ -126,7 +181,14 @@ public class MatriculaService {
         responseDTO.setAluno(converterAluno(matricula.getAluno()));
         responseDTO.setDisciplina(converterDisciplina(matricula.getDisciplina()));
         responseDTO.setDataPrimeira(matricula.getDataPrimeira());
-        responseDTO.setNota(matricula.getNota());
+        responseDTO.setNota1(matricula.getNota1());
+        responseDTO.setNota2(matricula.getNota2());
+        
+        if (matricula.getNota1() != null && matricula.getNota2() != null) {
+            Double media = (matricula.getNota1() + matricula.getNota2()) / 2;
+            responseDTO.setMedia(media);
+        }
+        
         responseDTO.setStatus(matricula.getStatus());
         return responseDTO;
     }

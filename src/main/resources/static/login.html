@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acesso — Aluno Online</title>
+<script src="/auth.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: #f6f7fb;
+    color: #111827;
+    font: 14px 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { width: min(100%, 400px); }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+  .brand-logo {
+    display: grid; place-items: center;
+    width: 36px; height: 36px; border-radius: 8px;
+    background: #2563eb; color: #fff; font-size: 18px;
+  }
+  .brand strong { display: block; font-size: 16px; }
+  .brand small { color: #6b7280; }
+  .panel { padding: 28px; background: #fff; border: 1px solid #e4e7ee; border-radius: 10px; }
+  h1 { margin: 0 0 8px; font-size: 22px; letter-spacing: -.2px; }
+  .intro { margin: 0 0 24px; color: #6b7280; line-height: 1.5; }
+  button, input { font: inherit; }
+  .modes { display: flex; gap: 6px; padding: 4px; margin-bottom: 24px; background: #f1f3f8; border-radius: 6px; }
+  .modes button { flex: 1; min-height: 36px; border: 0; border-radius: 4px; background: transparent; color: #6b7280; cursor: pointer; }
+  .modes button[aria-pressed="true"] { background: #fff; color: #1d4ed8; font-weight: 600; }
+  label { display: block; margin: 16px 0 6px; font-weight: 600; font-size: 13px; }
+  input { width: 100%; min-height: 42px; border: 1px solid #cbd2dd; border-radius: 6px; padding: 10px 12px; color: #111827; background: #fff; }
+  :focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
+  .submit { width: 100%; min-height: 42px; margin-top: 22px; padding: 10px 16px; border: 0; border-radius: 6px; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; }
+  .submit:hover { background: #1d4ed8; }
+  button:disabled { cursor: wait; opacity: .65; }
+  .message { margin: 16px 0 0; line-height: 1.5; color: #dc2626; }
+  .message.success { color: #15803d; }
+  .message:empty { display: none; }
+  @media (max-width: 420px) { body { padding: 16px; } .panel { padding: 22px; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">
+    <div class="brand-logo" aria-hidden="true">🎓</div>
+    <div><strong>Aluno Online</strong><small>Gestão Acadêmica</small></div>
+  </div>
+  <section class="panel" aria-labelledby="title">
+    <h1 id="title">Acesse sua conta</h1>
+    <p class="intro" id="intro">Entre para acessar o sistema acadêmico.</p>
+    <div class="modes" aria-label="Tipo de acesso">
+      <button type="button" id="loginMode" aria-pressed="true">Entrar</button>
+      <button type="button" id="registerMode" aria-pressed="false">Criar conta</button>
+    </div>
+    <form id="accessForm">
+      <label for="login">Login</label>
+      <input id="login" name="login" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      <label for="senha">Senha</label>
+      <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+      <button class="submit" id="submit" type="submit">Entrar</button>
+    </form>
+    <p class="message" id="message" role="status" aria-live="polite"></p>
+  </section>
+</main>
+<script>
+  const form = document.getElementById('accessForm');
+  const login = document.getElementById('login');
+  const senha = document.getElementById('senha');
+  const submit = document.getElementById('submit');
+  const message = document.getElementById('message');
+  const loginMode = document.getElementById('loginMode');
+  const registerMode = document.getElementById('registerMode');
+  let registering = false;
+
+  function setMode(value) {
+    registering = value;
+    loginMode.setAttribute('aria-pressed', String(!value));
+    registerMode.setAttribute('aria-pressed', String(value));
+    document.getElementById('title').textContent = value ? 'Crie sua conta' : 'Acesse sua conta';
+    document.getElementById('intro').textContent = value
+      ? 'Escolha um login e uma senha para acessar o sistema.'
+      : 'Entre para acessar o sistema acadêmico.';
+    senha.autocomplete = value ? 'new-password' : 'current-password';
+    senha.value = '';
+    submit.textContent = value ? 'Criar conta' : 'Entrar';
+    message.textContent = '';
+    message.className = 'message';
+  }
+
+  loginMode.addEventListener('click', () => setMode(false));
+  registerMode.addEventListener('click', () => setMode(true));
+  if (new URLSearchParams(window.location.search).get('motivo') === 'sessao') {
+    message.textContent = 'Sua sessão expirou. Entre novamente para continuar.';
+  }
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const creatingAccount = registering;
+    message.textContent = '';
+    message.className = 'message';
+    submit.disabled = loginMode.disabled = registerMode.disabled = true;
+    submit.textContent = creatingAccount ? 'Criando conta...' : 'Entrando...';
+    try {
+      const response = await fetch(creatingAccount ? '/usuarios' : '/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login: login.value.trim(), senha: senha.value })
+      });
+      const text = await response.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = text; }
+      if (!response.ok) {
+        const fallback = response.status === 401 ? 'Login ou senha inválidos.' : 'Não foi possível concluir. Tente novamente.';
+        const detail = Array.isArray(data)
+          ? data.map(item => [item.campo, item.mensagem].filter(Boolean).join(': ')).filter(Boolean).join('; ')
+          : (typeof data === 'string' ? data : data?.message || data?.detail || data?.erro);
+        throw new Error(detail || fallback);
+      }
+      if (creatingAccount) {
+        setMode(false);
+        message.className = 'message success';
+        message.textContent = 'Conta criada. Entre com seu login e sua senha.';
+        senha.focus();
+      } else {
+        if (typeof data?.token !== 'string' || !data.token) throw new Error('Não foi possível iniciar a sessão. Tente novamente.');
+        window.AlunoAuth.signIn(data.token);
+      }
+    } catch (error) {
+      message.textContent = error instanceof TypeError ? 'Não foi possível conectar ao sistema. Tente novamente.' : error.message;
+    } finally {
+      submit.disabled = loginMode.disabled = registerMode.disabled = false;
+      submit.textContent = registering ? 'Criar conta' : 'Entrar';
+    }
+  });
+</script>
+</body>
+</html>

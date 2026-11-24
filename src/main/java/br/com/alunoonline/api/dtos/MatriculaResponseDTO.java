@@ -3,7 +3,6 @@ package br.com.alunoonline.api.dtos;
 import br.com.alunoonline.api.model.StatusMatricula;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -17,7 +16,11 @@ public class MatriculaResponseDTO {
 
     private LocalDateTime dataPrimeira;
 
-    private BigDecimal nota;
+    private Double nota1;
+
+    private Double nota2;
+    
+    private Double media;
 
     private StatusMatricula status;
 }

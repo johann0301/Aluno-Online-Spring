@@ -52,8 +52,8 @@ $$
 ;;
 
 -- Procedure 2: Lancar nota e atualizar status automaticamente
--- nota >= 7  -> CONCLUIDA
--- nota <  7  -> mantem status atual (ou TRANCADA se nota = 0)
+-- media >= 7  -> APROVADO
+-- media <  7  -> mantem status atual (ou TRANCADO se media = 0)
 CREATE OR REPLACE PROCEDURE sp_lancar_nota(
     p_matricula_id INTEGER,
     p_nota         NUMERIC
@@ -69,9 +69,10 @@ BEGIN
     END IF;
 
     UPDATE matricula
-       SET nota   = p_nota,
+       SET nota1   = p_nota,
+           nota2   = p_nota,
            status = CASE
-                       WHEN p_nota >= 7 THEN 'CONCLUIDA'::varchar
+                       WHEN p_nota >= 7 THEN 'APROVADO'::varchar
                        ELSE status
                    END
      WHERE id = p_matricula_id;
@@ -86,11 +87,11 @@ LANGUAGE plpgsql AS $$
 DECLARE
     v_media NUMERIC;
 BEGIN
-    SELECT ROUND(AVG(nota)::numeric, 2)
+    SELECT ROUND(AVG((nota1 + nota2) / 2)::numeric, 2)
       INTO v_media
       FROM matricula
      WHERE aluno_id = p_aluno_id
-       AND nota IS NOT NULL;
+       AND nota1 IS NOT NULL AND nota2 IS NOT NULL;
 
     RETURN COALESCE(v_media, 0);
 END;

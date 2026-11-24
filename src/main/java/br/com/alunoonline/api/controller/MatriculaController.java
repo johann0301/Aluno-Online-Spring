@@ -1,19 +1,21 @@
 package br.com.alunoonline.api.controller;
 
+import br.com.alunoonline.api.dtos.AtualizarNotasRequestDTO;
+import br.com.alunoonline.api.dtos.HistoricoAlunoResponseDTO;
 import br.com.alunoonline.api.dtos.MatriculaDTO;
 import br.com.alunoonline.api.dtos.MatriculaResponseDTO;
 import br.com.alunoonline.api.service.MatriculaService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/matriculas")
+@SecurityRequirement(name = "bearer-key")
 public class MatriculaController {
 
     @Autowired
@@ -61,27 +63,27 @@ public class MatriculaController {
         matriculaService.deletarMatriculaPorId(id);
     }
 
-    // Procedure SQL: sp_transferir_matricula
+    @PatchMapping("/trancar/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void trancarMatricula(@PathVariable Long id) {
+        matriculaService.trancarMatricula(id);
+    }
+
+    @PatchMapping("/atualizar-notas/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void atualizarNotas(@PathVariable Long id, @RequestBody AtualizarNotasRequestDTO dto) {
+        matriculaService.atualizarNotas(id, dto);
+    }
+
     @PostMapping("/{id}/transferir")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void transferirMatricula(
-            @PathVariable Long id,
-            @RequestBody Map<String, Long> body) {
-        matriculaService.transferirMatricula(id, body.get("disciplinaNovaId"));
+    public void transferirMatricula(@PathVariable Long id, @RequestBody java.util.Map<String, Long> request) {
+        matriculaService.transferirMatricula(id, request.get("disciplinaNovaId"));
     }
 
-    // Procedure SQL: sp_lancar_nota
-    @PostMapping("/{id}/nota")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void lancarNota(
-            @PathVariable Long id,
-            @RequestBody Map<String, BigDecimal> body) {
-        matriculaService.lancarNota(id, body.get("nota"));
-    }
-
-    // Function SQL: fn_media_aluno
-    @GetMapping("/aluno/{alunoId}/media")
-    public Map<String, BigDecimal> mediaAluno(@PathVariable Long alunoId) {
-        return Map.of("media", matriculaService.mediaAluno(alunoId));
+    @GetMapping("/emitir-historico/{alunoId}")
+    @ResponseStatus(HttpStatus.OK)
+    public HistoricoAlunoResponseDTO emitirHistorico(@PathVariable Long alunoId) {
+        return matriculaService.emitirHistorico(alunoId);
     }
 }

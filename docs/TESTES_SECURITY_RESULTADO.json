@@ -1,0 +1,97 @@
+{
+  "resultado": "APROVADO",
+  "verificado_em": "2026-11-24T13:55:06-03:00",
+  "base_url": "http://127.0.0.1:8081",
+  "verificacoes_http": [
+    {
+      "metodo": "GET",
+      "rota": "/alunos",
+      "status": 401
+    },
+    {
+      "metodo": "POST",
+      "rota": "/usuarios",
+      "status": 201
+    },
+    {
+      "metodo": "POST",
+      "rota": "/usuarios",
+      "status": 400
+    },
+    {
+      "metodo": "POST",
+      "rota": "/login",
+      "status": 401
+    },
+    {
+      "metodo": "POST",
+      "rota": "/login",
+      "status": 200
+    },
+    {
+      "metodo": "GET",
+      "rota": "/alunos",
+      "status": 200
+    },
+    {
+      "metodo": "GET",
+      "rota": "/professores",
+      "status": 200
+    },
+    {
+      "metodo": "GET",
+      "rota": "/disciplina",
+      "status": 200
+    },
+    {
+      "metodo": "GET",
+      "rota": "/matriculas",
+      "status": 200
+    },
+    {
+      "metodo": "GET",
+      "rota": "/dashboard/kpis",
+      "status": 200
+    },
+    {
+      "metodo": "GET",
+      "rota": "/relatorios/metadata",
+      "status": 200
+    },
+    {
+      "metodo": "POST",
+      "rota": "/relatorios",
+      "status": 200
+    },
+    {
+      "metodo": "POST",
+      "rota": "/relatorios/export.csv",
+      "status": 200
+    }
+  ],
+  "csv": {
+    "tipo": "text/csv;charset=UTF-8",
+    "linhas_com_cabecalho": 6,
+    "cabecalho": [
+      "ID",
+      "Nome",
+      "Total de Matrículas"
+    ]
+  },
+  "banco": "PostgreSQL dedicado da apresentação aluno_online_demo, porta 55434; dados persistentes em .demo/",
+  "dados_originais_preservados": true,
+  "maven": {
+    "testes": 28,
+    "falhas": 0,
+    "erros": 0,
+    "ignorados": 0
+  },
+  "swagger_navegador": {
+    "anonimo": 401,
+    "cadastro": 201,
+    "login": 200,
+    "authorize": "Authorized",
+    "get_autorizado": 200
+  },
+  "dashboard_navegador": "Carregamento confirmado"
+}

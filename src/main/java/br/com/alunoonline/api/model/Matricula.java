@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -30,7 +29,9 @@ public class Matricula {
     @Column(nullable = false)
     private LocalDateTime dataPrimeira;
 
-    private BigDecimal nota;
+    private Double nota1;
+
+    private Double nota2;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

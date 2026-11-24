@@ -2,6 +2,7 @@ package br.com.alunoonline.api.controller;
 
 import br.com.alunoonline.api.dtos.RelatorioRequestDTO;
 import br.com.alunoonline.api.service.RelatorioService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/relatorios")
+@SecurityRequirement(name = "bearer-key")
 public class RelatorioController {
 
     private final RelatorioService service;

@@ -12,9 +12,9 @@ SELECT
     a.email           AS aluno_email,
     a.cpf             AS aluno_cpf,
     COUNT(m.id)       AS total_matriculas,
-    COUNT(*) FILTER (WHERE m.status = 'ATIVA')      AS matriculas_ativas,
-    COUNT(*) FILTER (WHERE m.status = 'CONCLUIDA')  AS matriculas_concluidas,
-    COUNT(*) FILTER (WHERE m.status = 'TRANCADA')   AS matriculas_trancadas
+    COUNT(*) FILTER (WHERE m.status = 'MATRICULADO')      AS matriculas_ativas,
+    COUNT(*) FILTER (WHERE m.status = 'APROVADO')  AS matriculas_concluidas,
+    COUNT(*) FILTER (WHERE m.status = 'TRANCADO')   AS matriculas_trancadas
 FROM aluno a
 LEFT JOIN matricula m ON m.aluno_id = a.id
 GROUP BY a.id, a.name, a.email, a.cpf
@@ -33,12 +33,14 @@ SELECT
     p.id                AS professor_id,
     p.name              AS professor_nome,
     m.data_primeira     AS data_matricula,
-    m.nota              AS nota,
+    m.nota1             AS nota1,
+    m.nota2             AS nota2,
+    ((m.nota1 + m.nota2) / 2) AS nota,
     m.status            AS status,
     CASE
-        WHEN m.nota IS NULL THEN 'SEM_NOTA'
-        WHEN m.nota >= 7 THEN 'APROVADO'
-        WHEN m.nota >= 5 THEN 'RECUPERACAO'
+        WHEN m.nota1 IS NULL OR m.nota2 IS NULL THEN 'SEM_NOTA'
+        WHEN ((m.nota1 + m.nota2) / 2) >= 7 THEN 'APROVADO'
+        WHEN ((m.nota1 + m.nota2) / 2) >= 5 THEN 'RECUPERACAO'
         ELSE 'REPROVADO'
     END AS situacao
 FROM matricula m
@@ -55,12 +57,12 @@ SELECT
     d.carga_horaria                                 AS carga_horaria,
     p.name                                          AS professor_nome,
     COUNT(m.id)                                     AS total_matriculas,
-    COUNT(*) FILTER (WHERE m.nota >= 7)             AS aprovados,
-    COUNT(*) FILTER (WHERE m.nota < 7 AND m.nota IS NOT NULL) AS reprovados,
-    ROUND(AVG(m.nota)::numeric, 2)                  AS media_nota,
+    COUNT(*) FILTER (WHERE ((m.nota1 + m.nota2) / 2) >= 7) AS aprovados,
+    COUNT(*) FILTER (WHERE ((m.nota1 + m.nota2) / 2) < 7)  AS reprovados,
+    ROUND(AVG((m.nota1 + m.nota2) / 2)::numeric, 2) AS media_nota,
     ROUND(
-        100.0 * COUNT(*) FILTER (WHERE m.nota >= 7)
-        / NULLIF(COUNT(m.nota), 0), 2
+        100.0 * COUNT(*) FILTER (WHERE ((m.nota1 + m.nota2) / 2) >= 7)
+        / NULLIF(COUNT(m.nota1), 0), 2
     )                                               AS percentual_aprovacao
 FROM disciplina d
 LEFT JOIN professor p   ON p.id = d.professor_id
@@ -91,7 +93,7 @@ LEFT JOIN (
     SELECT
         d.professor_id,
         COUNT(m.id)                    AS total_matriculas,
-        ROUND(AVG(m.nota)::numeric, 2) AS media_notas
+        ROUND(AVG((m.nota1 + m.nota2) / 2)::numeric, 2) AS media_notas
     FROM disciplina d
     LEFT JOIN matricula m ON m.disciplina_id = d.id
     GROUP BY d.professor_id

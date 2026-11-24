@@ -3,6 +3,7 @@ package br.com.alunoonline.api.controller;
 import br.com.alunoonline.api.dtos.DisciplinaDTO;
 import br.com.alunoonline.api.model.Disciplina;
 import br.com.alunoonline.api.service.DisciplinaService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/disciplina")
+@SecurityRequirement(name = "bearer-key")
 public class DisciplinaController {
 
     @Autowired

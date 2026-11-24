@@ -1,5 +1,6 @@
 HELP.md
 target/
+.demo/
 AGENTS.md
 .env
 .env.*
